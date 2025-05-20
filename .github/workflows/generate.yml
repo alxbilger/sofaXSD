@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Run on ${{ matrix.os }} with SOFA ${{ matrix.sofa_branch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        sofa_branch: [master]
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+
+    steps:
+      - name: Install SOFA binaries and setting up environment
+        id: sofa
+        uses: sofa-framework/sofa-setup-action@v5
+        with:
+          sofa_root: ${{ github.workspace }}/sofa
+          sofa_version: ${{ matrix.sofa_branch }}
+          sofa_scope: 'full'
+          sofa_with_sofapython3: 'true'
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.WORKSPACE_SRC_PATH }}
+
+      - name: Generate XML schema
+        run: |
+          echo $SOFA_ROOT
+          export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH
+          echo $PYTHONPATH
+          
+          pip install numpy
+          
+          cd ${{ github.workspace }}
+          
+          python /make_xsd.py
+          git commit -a -m "Update XML schema"
+          git push --force
+
