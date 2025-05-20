@@ -38,12 +38,10 @@ jobs:
           echo $SOFA_ROOT
           export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH
           echo $PYTHONPATH
+                    
+          cd ${{ env.WORKSPACE_SRC_PATH }}
           
-          pip install numpy
-          
-          cd ${{ github.workspace }}
-          
-          python /make_xsd.py
+          python make_xsd.py
           git commit -a -m "Update XML schema"
           git push --force
 
