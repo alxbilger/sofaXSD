@@ -26,13 +26,23 @@ def generate_sofa_components(schema, json_str):
 
         schema += """<xs:complexType><xs:sequence/>"""
 
-        has_template = False
+        templates = set()
         for _, creator in component["creator"].items():
-            if creator["class"]["templateName"] != "":
-                has_template = True
+            template = creator["class"]["templateName"]
+            if template != "":
+                if not any(elem in template for elem in "<>"):
+                    templates.add(template)
 
-        if has_template:
-            schema += f"""<xs:attribute name="template" type="xs:string"/>"""
+        if len(templates) > 0:
+            schema += """<xs:attribute name="template">
+<xs:simpleType>
+<xs:restriction base="xs:string">"""
+
+            for template in templates:
+                schema += f"""<xs:enumeration value="{template}"/>"""
+
+            schema += """</xs:restriction>
+</xs:simpleType></xs:attribute>"""
 
         data_set = set()
         for _, creator in component["creator"].items():
@@ -75,8 +85,8 @@ def generate_xml_schema(json_str):
     schema += """</xs:schema>"""
 
     schema = schema.replace('\n', ' ').replace('\r', '')
-    dom = xml.dom.minidom.parseString(schema)
 
+    dom = xml.dom.minidom.parseString(schema)
     return dom.toprettyxml(indent="    ")
 
 
