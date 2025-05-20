@@ -27,9 +27,9 @@ def generate_sofa_components(schema, json_str):
         schema += """<xs:complexType><xs:sequence/>"""
 
         has_template = False
-        for template, creator in component["creator"].items():
-            if template != "":
-                has_template
+        for _, creator in component["creator"].items():
+            if creator["class"]["templateName"] != "":
+                has_template = True
 
         if has_template:
             schema += f"""<xs:attribute name="template" type="xs:string"/>"""
